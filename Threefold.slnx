@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Threefold/Threefold.vcxproj" Id="67b870f0-8043-48a5-a11d-be685ef8bf3f" />
+</Solution>
