@@ -170,11 +170,34 @@ public:
 	}
 
 	bool hasRoyalFlush(const std::vector<Cards>& cards) {
+		auto suits = countSuits(cards);
+
 		std::vector<std::string> royalSequence = {"10", "J", "Q", "K", "A" };
-		std::vector<int> cardRanks;
-		for (const auto& card : cards) {
-			std::find(royalSequence.begin(), royalSequence.end(), card.rank);
-			cardRanks.push_back(getRankValue(card.rank));
+		
+
+		for (const auto& pair : suits) {
+			if (pair.second >= 5) {
+				bool isRoyalFlush = true;
+				std::vector<Cards> suitedCards;
+
+				for (const auto& card : cards) {
+					if (card.suit == pair.first) {
+						suitedCards.push_back(card);
+					}
+				}
+				for (const std::string rank : royalSequence) {
+					if (std::find_if(suitedCards.begin(), suitedCards.end(), [rank](const Cards& card) {
+						return card.rank == rank;
+					}) == suitedCards.end()) {
+						isRoyalFlush = false;
+						break;
+					}
+				}
+				if (isRoyalFlush) {
+					return true;
+				}
+			}
 		}
+		return false;
 	}
 };		
