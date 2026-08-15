@@ -30,9 +30,11 @@ int main() {
     board.showBoard();
 
 	std::map<std::string, int> result1 = evaluator.evaluateHand(player1.getCombination(board));
-    std::map<std::string, int> result2 = evaluator.evaluateHand(player2.getCombination(board));
+	std::map<std::string, int> result2 = evaluator.evaluateHand(player2.getCombination(board));
+	std::map<std::string, int> suits1 = evaluator.countSuits(player1.getCombination(board));
+	std::map<std::string, int> suits2 = evaluator.countSuits(player2.getCombination(board));
 
-    if (evaluator.countPair(result1) >= 1) {
+	if (evaluator.countPair(result1) >= 1) {
         std::cout << "Player 1 has a pair." << std::endl;
     }
     if (evaluator.countPair(result2) >= 1) {
