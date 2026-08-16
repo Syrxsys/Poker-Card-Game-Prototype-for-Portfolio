@@ -5,6 +5,20 @@
 #include "Player.h"
 #include <algorithm>
 #include <map>
+
+enum class HandRank {
+	HighCard = 1,
+	Pair,
+	TwoPair,
+	ThreeOfAKind,
+	Straight,
+	Flush,
+	FullHouse,
+	FourOfAKind,
+	StraightFlush,
+	RoyalFlush
+};
+
 class HandEvaluator {
 public:
 	// Evaluates the hand and returns a map of ranks and their counts
@@ -34,6 +48,30 @@ public:
 
 		return std::stoi(rank);
 
+	}
+
+	std::vector<int> getSortedRanks(const std::vector<Cards>& cards) {
+		std::vector<int> ranks{};
+
+		for (const auto card : cards) {
+			ranks.push_back(getRankValue(card.rank));
+		}
+
+		std::sort(ranks.rbegin(), ranks.rend());
+
+		return ranks;
+
+	}
+
+	int getHighCard(const std::vector<Cards>& cards) {
+		int highCardValue = 0;
+		for (const auto& card : cards) {
+			int cardValue = getRankValue(card.rank);
+			if (cardValue > highCardValue) {
+				highCardValue = cardValue;
+			}
+		}
+		return highCardValue;
 	}
 
 	int countPair(const std::map<std::string, int>& handRanks) {
@@ -199,5 +237,124 @@ public:
 			}
 		}
 		return false;
+	}
+
+	HandRank getHandCategory(const std::vector<Cards>& cards) {
+		auto cardHand = evaluateHand(cards);
+		auto suits = countSuits(cards);
+
+		if (hasRoyalFlush(cards)) {
+			return HandRank::RoyalFlush;
+		}
+		else if (hasStraightFlush(cards)) {
+			return HandRank::StraightFlush;
+		}
+		else if (hasFourOfAKind(cardHand)) {
+			return HandRank::FourOfAKind;
+		}
+		else if (hasFullHouse(cardHand)) {
+			return HandRank::FullHouse;
+		}
+		else if (hasFlush(suits)) {
+			return HandRank::Flush;
+		}
+		else if (hasStraight(cards)) {
+			return HandRank::Straight;
+		}
+		else if (countThreeOfAKind(cardHand) >= 1) {
+			return HandRank::ThreeOfAKind;
+		}
+		else if (countPair(cardHand) >= 2) {
+			return HandRank::TwoPair;
+		}
+		else if (countPair(cardHand) >= 1) {
+			return HandRank::Pair;
+		}
+		return HandRank::HighCard;
+	}	
+
+	int compareHands(const std::vector<Cards>& hand1, const std::vector<Cards>& hand2) {
+		auto categoryH1 = getHandCategory(hand1);
+		auto categoryH2 = getHandCategory(hand2);
+
+		auto ranks1 = getSortedRanks(hand1);
+		auto ranks2 = getSortedRanks(hand2);
+
+		auto hand1CardMapping = evaluateHand(hand1);
+		auto hand2CardMapping = evaluateHand(hand2);
+
+		if (categoryH1 > categoryH2) {
+			return 1;
+		}
+		else if (categoryH2 > categoryH1) {
+			return -1;
+		}
+		else {
+			switch (categoryH1) {
+			case HandRank::HighCard:
+				for (int i = 0; i < ranks1.size(); i++) {
+					if (ranks1[i] > ranks2[i]) {
+						return 1;
+					}
+					else if (ranks2[i] > ranks1[i]) {
+						return -1;
+					}
+				}
+				break;
+
+			case HandRank::Pair:
+				int PairValue1 = 0;
+				int PairValue2 = 0;
+
+				std::vector<int> kickers1{};
+				std::vector<int> kickers2{};
+
+				for (auto map : hand1CardMapping) {
+					if (map.second == 2) {
+						int PairValue1 = getRankValue(map.first);
+						
+					}
+				}
+
+				for (auto map : hand2CardMapping) {
+					if (map.second == 2) {
+						int PairValue2 = getRankValue(map.first);
+					}
+				
+				}
+
+				for (int rank : ranks1) {
+					if (rank != PairValue1) {
+						kickers1.push_back(rank);
+					}
+				}
+
+				for (int rank : ranks2) {
+					if (rank != PairValue2) {
+						kickers2.push_back(rank);
+					}
+				}
+
+				if (PairValue1 > PairValue2) {
+					return 1;
+				}
+				else if (PairValue2 > PairValue1) {
+					return -1;
+				}
+				else {
+					for (int i = 0; i < kickers1.size(); i++) {
+						if (kickers1[i] > kickers2[i]) {
+							return 1;
+						}
+						else if (kickers2[i] > kickers1[i]) {
+							return -1;
+						}
+					}
+				}
+				break;
+			}
+			return 0;
+		}
+
 	}
 };		
