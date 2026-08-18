@@ -303,6 +303,7 @@ public:
 				break;
 
 			case HandRank::Pair:
+			{
 				int PairValue1 = 0;
 				int PairValue2 = 0;
 
@@ -311,16 +312,15 @@ public:
 
 				for (auto map : hand1CardMapping) {
 					if (map.second == 2) {
-						int PairValue1 = getRankValue(map.first);
-						
+						PairValue1 = getRankValue(map.first);
 					}
 				}
 
 				for (auto map : hand2CardMapping) {
 					if (map.second == 2) {
-						int PairValue2 = getRankValue(map.first);
+						PairValue2 = getRankValue(map.first);
 					}
-				
+
 				}
 
 				for (int rank : ranks1) {
@@ -351,6 +351,45 @@ public:
 						}
 					}
 				}
+				break;
+			}
+
+			case HandRank::TwoPair:
+				std::vector<int> Pairs1{};
+				std::vector<int> Pairs2{};
+				int kicker1 = 0;
+				int kicker2 = 0;
+				for (auto map : hand1CardMapping) {
+					if (map.second == 2) {
+						Pairs1.push_back(getRankValue(map.first));
+					}
+				}
+
+				for (auto map : hand2CardMapping) {
+					if (map.second == 2) {
+						Pairs2.push_back(getRankValue(map.first));
+					}
+				}
+
+				std::sort(Pairs1.rbegin(), Pairs1.rend());
+				std::sort(Pairs2.rbegin(), Pairs2.rend());
+
+				for (int rank : ranks1) {
+					if (rank != Pairs1[0] && rank != Pairs1[1]) {
+						kicker1 = rank;
+					}
+				}
+
+				for (int rank : ranks2) {
+					if (rank != Pairs1[0] && rank != Pairs2[1]) {
+						kicker2 = rank;
+					}
+				}
+
+				if (Pairs1[0] != Pairs2[0]) return (Pairs1[0] > Pairs2[0]) ? 1 : -1;
+				if (Pairs1[1] != Pairs2[1]) return (Pairs1[1] > Pairs2[1]) ? 1 : -1;
+				return (kicker1 > kicker2) ? 1 : (kicker2 > kicker1) ? -1 : 0;
+
 				break;
 			}
 			return 0;
