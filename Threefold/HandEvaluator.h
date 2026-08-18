@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <map>
 
+// Enumeration of poker hand rankings in order of strength
 enum class HandRank {
 	HighCard = 1,
 	Pair,
@@ -19,9 +20,20 @@ enum class HandRank {
 	RoyalFlush
 };
 
+// Hand evaluator class for evaluating and comparing poker hands
+// 
+// Provides functionality to:
+// - Identify hand categories (high card, pair, flush, straight, etc.)
+// - Compare two hands and determine the winner
+// - Extract card information (ranks, suits, sorted values)
+//
+// Usage:
+//   HandEvaluator evaluator;
+//   HandRank category = evaluator.getHandCategory(cards);  // Get hand ranking
+//   int result = evaluator.compareHands(hand1, hand2);     // Compare hands (1/-1/0)
 class HandEvaluator {
 public:
-	// Evaluates the hand and returns a map of ranks and their counts
+	// Returns a map of card ranks and their occurrence count
 	std::map<std::string, int> evaluateHand(const std::vector<Cards>& cards) {
 		std::map<std::string, int> handRanks;
 		for (Cards card : cards) {
@@ -31,7 +43,7 @@ public:
 		return handRanks;
 	}
 
-	// Evaluates the hand and returns a map of suits and their counts
+	// Returns a map of card suits and their occurrence count
 	std::map<std::string, int> countSuits(const std::vector<Cards>& cards) {
 		std::map<std::string, int> suits;
 		for (const Cards& card : cards) {
@@ -40,6 +52,7 @@ public:
 		return suits;
 	}	
 
+	// Converts a card rank string to its numeric value for comparison
 	int getRankValue(const std::string& rank) {
 		if (rank == "J") return 11;
 		if (rank == "Q") return 12;
@@ -50,6 +63,44 @@ public:
 
 	}
 
+	// Returns the highest card value of a straight, considering ace-low straights (A,2,3,4,5 = value 5)
+	// Returns 0 if no straight exists
+	int getHighestStraightCard(const std::vector<Cards>& cards) {
+		if (!hasStraight(cards)) return 0;
+
+		std::vector<int> sequence{};
+
+		for (auto card : cards) {
+			sequence.push_back(getRankValue(card.rank));
+		}
+
+		std::sort(sequence.rbegin(), sequence.rend());
+
+		std::vector<int> AceSequence= { 14, 2, 3, 4, 5 };
+		bool isAceLow = true;
+
+		for (int rank : sequence) {
+			if (std::find(AceSequence.begin(), AceSequence.end(), rank) == AceSequence.end()) {
+				isAceLow = false;
+			}
+
+		}
+
+		// Ace-low straight has value 5, not 14
+		if (isAceLow) return 5;
+
+		// For regular straights, find the highest card in any 5-card consecutive sequence
+		int highest = 0;
+		for (int i = sequence.size() - 1; i >= 4; i--) {
+			if (sequence[i] - sequence[i - 4] == 4) {
+				highest = sequence[i];
+				break;
+			}
+			return highest;
+		}
+
+	}
+	// Extracts rank values from cards and returns them sorted in descending order
 	std::vector<int> getSortedRanks(const std::vector<Cards>& cards) {
 		std::vector<int> ranks{};
 
@@ -63,6 +114,7 @@ public:
 
 	}
 
+	// Returns the highest ranked card value in the hand
 	int getHighCard(const std::vector<Cards>& cards) {
 		int highCardValue = 0;
 		for (const auto& card : cards) {
@@ -74,6 +126,7 @@ public:
 		return highCardValue;
 	}
 
+	// Counts the number of pairs in the hand
 	int countPair(const std::map<std::string, int>& handRanks) {
 		int pairCounter = 0;
 		for (const auto& pair : handRanks) {
@@ -87,6 +140,7 @@ public:
 		return 0;
 	}
 
+	// Counts the number of three-of-a-kind combinations in the hand
 	int countThreeOfAKind(const std::map<std::string, int>& handRanks) {
 		int threeCounter = 0;
 		for (const auto& pair : handRanks) {
@@ -101,6 +155,7 @@ public:
 		return 0;
 	}
 
+	// Determines if the hand contains a full house (three-of-a-kind plus a pair)
 	bool hasFullHouse(const std::map<std::string, int>& handRanks) {
 		bool hasThree = false;
 		bool hasTwo = false;
@@ -125,6 +180,7 @@ public:
 		return false;
 	}
 
+	// Determines if the hand contains four cards of the same rank
 	bool hasFourOfAKind(const std::map<std::string, int>& handRanks) {
 		for (const auto& pair : handRanks) {
 			if (pair.second == 4) {
@@ -134,6 +190,9 @@ public:
 		return false;
 	}
 
+	// Determines if the hand contains five consecutive ranked cards, including ace-low straights
+	// Handles duplicates by ignoring matching consecutive values
+	// Checks both regular straights and the special ace-low case (A,2,3,4,5)
 	bool hasStraight(const std::vector<Cards>& cards) {
 		std::vector<int> ranks;
 		int succeding = 1;
@@ -176,6 +235,7 @@ public:
 		return false;
 	}
 
+	// Determines if the hand contains five or more cards of the same suit
 	bool hasFlush(const std::map<std::string, int>& suits) {
 		for (const auto& pair : suits) {
 			if (pair.second >= 5) {
@@ -185,6 +245,8 @@ public:
 		return false;
 	}
 
+	// Determines if the hand contains five consecutive cards of the same suit
+	// Filters cards by suit first, then checks if the filtered cards form a straight
 	bool hasStraightFlush(const std::vector<Cards>& cards) {
 		auto suits = countSuits(cards);
 
@@ -207,6 +269,7 @@ public:
 		return false;
 	}
 
+	// Determines if the hand contains cards 10, J, Q, K, A all of the same suit
 	bool hasRoyalFlush(const std::vector<Cards>& cards) {
 		auto suits = countSuits(cards);
 
@@ -239,6 +302,7 @@ public:
 		return false;
 	}
 
+	// Evaluates the hand and returns the highest ranking category
 	HandRank getHandCategory(const std::vector<Cards>& cards) {
 		auto cardHand = evaluateHand(cards);
 		auto suits = countSuits(cards);
@@ -273,6 +337,7 @@ public:
 		return HandRank::HighCard;
 	}	
 
+	// Compares two hands and returns the winner (1 = hand1, -1 = hand2, 0 = tie)
 	int compareHands(const std::vector<Cards>& hand1, const std::vector<Cards>& hand2) {
 		auto categoryH1 = getHandCategory(hand1);
 		auto categoryH2 = getHandCategory(hand2);
@@ -396,60 +461,71 @@ public:
 				break;
 			}
 
-				case HandRank::ThreeOfAKind:
-				{
-					int ThreeValue1{};
-					int ThreeValue2{};
-				
-					std::vector<int> kickers1{};
-					std::vector<int> kickers2{};
+			case HandRank::ThreeOfAKind:
+			{
+				int ThreeValue1{};
+				int ThreeValue2{};
 
-					for (auto map : hand1CardMapping) {
-						if (map.second == 3) {
-							ThreeValue1 = getRankValue(map.first);
-						}
-					}
+				std::vector<int> kickers1{};
+				std::vector<int> kickers2{};
 
-					for (auto map : hand2CardMapping) {
-						if (map.second == 3) {
-							ThreeValue2 = getRankValue(map.first);
-						}
+				for (auto map : hand1CardMapping) {
+					if (map.second == 3) {
+						ThreeValue1 = getRankValue(map.first);
 					}
-
-					for (int rank : ranks1) {
-						if (rank != ThreeValue1) {
-							kickers1.push_back(rank);
-						}
-					}
-
-					for (int rank : ranks2) {
-						if (rank != ThreeValue2) {
-							kickers2.push_back(rank);
-						}
-					}
-
-					std::sort(kickers1.rbegin(), kickers1.rend());
-					std::sort(kickers2.rbegin(), kickers2.rend());
-					
-					if (ThreeValue1 > ThreeValue2) {
-						return 1;
-					}
-					else if (ThreeValue2 > ThreeValue1) {
-						return -1;
-					}
-					else {
-						for (int i = 0; i < kickers1.size(); i++) {
-							if (kickers1[i] > kickers2[i]) {
-								return 1;
-							}
-							else if (kickers2[i] > kickers1[i]) {
-								return -1;
-							}
-						}
-						return 0;
-					}
-					break;
 				}
+
+				for (auto map : hand2CardMapping) {
+					if (map.second == 3) {
+						ThreeValue2 = getRankValue(map.first);
+					}
+				}
+
+				for (int rank : ranks1) {
+					if (rank != ThreeValue1) {
+						kickers1.push_back(rank);
+					}
+				}
+
+				for (int rank : ranks2) {
+					if (rank != ThreeValue2) {
+						kickers2.push_back(rank);
+					}
+				}
+
+				std::sort(kickers1.rbegin(), kickers1.rend());
+				std::sort(kickers2.rbegin(), kickers2.rend());
+
+				if (ThreeValue1 > ThreeValue2) {
+					return 1;
+				}
+				else if (ThreeValue2 > ThreeValue1) {
+					return -1;
+				}
+				else {
+					for (int i = 0; i < kickers1.size(); i++) {
+						if (kickers1[i] > kickers2[i]) {
+							return 1;
+						}
+						else if (kickers2[i] > kickers1[i]) {
+							return -1;
+						}
+					}
+					return 0;
+				}
+				break;
+
+			}
+
+			case HandRank::Straight:
+			{
+				int straightValue1 = getHighestStraightCard(hand1);
+				int straightValue2 = getHighestStraightCard(hand2);
+
+				if (straightValue1 > straightValue2) return 1;
+				if (straightValue2 > straightValue1) return -1;
+				return 0;
+			}
 			}
 			return 0;
 		}
