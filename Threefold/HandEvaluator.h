@@ -300,6 +300,7 @@ public:
 						return -1;
 					}
 				}
+				return 0;
 				break;
 
 			case HandRank::Pair:
@@ -350,11 +351,13 @@ public:
 							return -1;
 						}
 					}
+					return 0;
 				}
 				break;
 			}
 
 			case HandRank::TwoPair:
+			{
 				std::vector<int> Pairs1{};
 				std::vector<int> Pairs2{};
 				int kicker1 = 0;
@@ -391,6 +394,62 @@ public:
 				return (kicker1 > kicker2) ? 1 : (kicker2 > kicker1) ? -1 : 0;
 
 				break;
+			}
+
+				case HandRank::ThreeOfAKind:
+				{
+					int ThreeValue1{};
+					int ThreeValue2{};
+				
+					std::vector<int> kickers1{};
+					std::vector<int> kickers2{};
+
+					for (auto map : hand1CardMapping) {
+						if (map.second == 3) {
+							ThreeValue1 = getRankValue(map.first);
+						}
+					}
+
+					for (auto map : hand2CardMapping) {
+						if (map.second == 3) {
+							ThreeValue2 = getRankValue(map.first);
+						}
+					}
+
+					for (int rank : ranks1) {
+						if (rank != ThreeValue1) {
+							kickers1.push_back(rank);
+						}
+					}
+
+					for (int rank : ranks2) {
+						if (rank != ThreeValue2) {
+							kickers2.push_back(rank);
+						}
+					}
+
+					std::sort(kickers1.rbegin(), kickers1.rend());
+					std::sort(kickers2.rbegin(), kickers2.rend());
+					
+					if (ThreeValue1 > ThreeValue2) {
+						return 1;
+					}
+					else if (ThreeValue2 > ThreeValue1) {
+						return -1;
+					}
+					else {
+						for (int i = 0; i < kickers1.size(); i++) {
+							if (kickers1[i] > kickers2[i]) {
+								return 1;
+							}
+							else if (kickers2[i] > kickers1[i]) {
+								return -1;
+							}
+						}
+						return 0;
+					}
+					break;
+				}
 			}
 			return 0;
 		}
