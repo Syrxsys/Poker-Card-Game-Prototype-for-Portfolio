@@ -525,7 +525,100 @@ public:
 				if (straightValue1 > straightValue2) return 1;
 				if (straightValue2 > straightValue1) return -1;
 				return 0;
+				break;
 			}
+
+			case HandRank::Flush: 
+			{
+				auto suits1 = countSuits(hand1);
+				auto suits2 = countSuits(hand2);
+
+				std::string flushSuit1, flushSuit2;
+
+				for (auto map : suits1) {
+					if (map.second == 5) {
+						flushSuit1 = map.first;
+					}
+				}
+
+				for (auto map : suits2) {
+					if (map.second == 5) {
+						flushSuit2 = map.first;
+					}
+				}
+
+				std::vector<int> flushRanks1, flushRanks2;
+
+				for (const auto& card : hand1) {
+					if (card.suit == flushSuit1) {
+						flushRanks1.push_back(getRankValue(card.rank));
+					}
+				}
+
+				for (const auto& card : hand2) {
+					if (card.suit == flushSuit2) {
+						flushRanks2.push_back(getRankValue(card.rank));
+					}
+				}
+
+				std::sort(flushRanks1.rbegin(), flushRanks1.rend());
+				std::sort(flushRanks2.rbegin(), flushRanks2.rend());
+
+				for (int i = 0; i < flushRanks1.size(); i++) {
+					if (flushRanks1[i] > flushRanks2[i]) {
+						return 1;
+					}
+					else if (flushRanks2[i] > flushRanks1[i]) {
+						return -1;
+					} 
+				}
+				return 0;
+				break;
+			}
+			case HandRank::StraightFlush:
+			{
+				auto suits1 = countSuits(hand1);
+				auto suits2 = countSuits(hand2);
+
+				std::string sfSuit1, sfSuit2;
+
+				std::vector<Cards> suitedCards1;
+				for (auto map : suits1) {
+					if (map.second >= 5) {
+						for (auto card : hand1) {
+							if (card.suit == map.first) {
+								suitedCards1.push_back(card);
+							}
+						}
+						if (hasStraight(suitedCards1)) {
+							sfSuit1 = map.first;
+						}
+					}
+				}
+
+				std::vector<Cards> suitedCards2;
+				for (auto map : suits2) {
+					if (map.second >= 5) {
+						for (auto card : hand2) {
+							if (card.suit == map.first) {
+								suitedCards2.push_back(card);
+							}
+						}
+						if (hasStraight(suitedCards2)) {
+							sfSuit2 = map.first;
+						}
+					}
+				}
+
+				int sfValue1 = getHighestStraightCard(suitedCards1);
+				int sfValue2 = getHighestStraightCard(suitedCards2);
+				
+				if (sfValue1 > sfValue2) return 1;
+				if (sfValue2 > sfValue1) return -1;
+				return 0;
+				break;
+			}
+
 			}
 			return 0;
 		}
