@@ -139,10 +139,13 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HandComparator.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
+    <ClInclude Include="HandComparator.h" />
+    <ClInclude Include="HandData.h" />
     <ClInclude Include="HandEvaluator.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Game.h" />

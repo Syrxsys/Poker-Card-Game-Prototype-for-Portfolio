@@ -29,10 +29,6 @@ int main() {
     std::cout << std::endl;
     board.showBoard();
 
-    std::map<std::string, int> result1 = evaluator.evaluateHand(player1.getCombination(board));
-    std::map<std::string, int> result2 = evaluator.evaluateHand(player2.getCombination(board));
-    std::map<std::string, int> suits1 = evaluator.countSuits(player1.getCombination(board));
-    std::map<std::string, int> suits2 = evaluator.countSuits(player2.getCombination(board));
     std::vector<Cards> hand1 = player1.getCombination(board);
     std::vector<Cards> hand2 = player2.getCombination(board);
 
