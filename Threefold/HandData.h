@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Cards.h"
-#include "HandEvaluator.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -21,8 +20,8 @@ enum class HandRank {
 };
 
 struct HandData {
-	HandRank category;
-	std::vector<int> ranks;
-	std::map<std::string, int> cardMapping;
-	const std::vector<Cards>& cards;
+	HandRank category{};
+	std::vector<int> ranks{};
+	std::map<std::string, int> cardMapping{};
+	std::vector<Cards> cards{};
 };

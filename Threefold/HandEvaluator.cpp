@@ -1,18 +1,18 @@
 #include "HandEvaluator.h"
 
-HandData getHandData(const std::vector<Cards>& cards) const {
+HandData HandEvaluator::getHandData(const std::vector<Cards>& cards) const {
 	HandData data;
 
 	data.category = getHandCategory(cards);
 	data.ranks = getSortedRanks(cards);
-	data.handCardMapping = evaluateHand(cards);
-	data.cards = cards
+	data.cardMapping = evaluateHand(cards);
+	data.cards = cards;
 
 	return data;
 
 }
 
-std::map<std::string, int> evaluateHand(const std::vector<Cards>& cards) const {
+std::map<std::string, int> HandEvaluator::evaluateHand(const std::vector<Cards>& cards) const {
 	std::map<std::string, int> handRanks;
 	for (Cards card : cards) {
 		handRanks[card.rank]++;
@@ -21,7 +21,7 @@ std::map<std::string, int> evaluateHand(const std::vector<Cards>& cards) const {
 	return handRanks;
 }
 
-std::map<std::string, int> countSuits(const std::vector<Cards>& cards) const {
+std::map<std::string, int> HandEvaluator::countSuits(const std::vector<Cards>& cards) const {
 	std::map<std::string, int> suits;
 	for (const Cards& card : cards) {
 		suits[card.suit]++;
@@ -29,17 +29,17 @@ std::map<std::string, int> countSuits(const std::vector<Cards>& cards) const {
 	return suits;
 }
 
-int getRankValue(const std::string& rank) const {
+int HandEvaluator::getRankValue(const std::string& rank) const {
 	if (rank == "J") return 11;
 	if (rank == "Q") return 12;
-	if (rank == "K")return 13;
+	if (rank == "K") return 13;
 	if (rank == "A") return 14;
 
 	return std::stoi(rank);
 
 }
 
-int getHighestStraightCard(const std::vector<Cards>& cards) const {
+int HandEvaluator::getHighestStraightCard(const std::vector<Cards>& cards) const {
 	if (!hasStraight(cards)) return 0;
 
 	std::vector<int> sequence{};
@@ -75,7 +75,7 @@ int getHighestStraightCard(const std::vector<Cards>& cards) const {
 
 }
 
-std::vector<int> getSortedRanks(const std::vector<Cards>& cards) const {
+std::vector<int> HandEvaluator::getSortedRanks(const std::vector<Cards>& cards) const {
 	std::vector<int> ranks{};
 
 	for (const auto card : cards) {
@@ -88,7 +88,7 @@ std::vector<int> getSortedRanks(const std::vector<Cards>& cards) const {
 
 }
 
-int countPair(const std::map<std::string, int>& handRanks) const {
+int HandEvaluator::countPair(const std::map<std::string, int>& handRanks) const {
 	int pairCounter = 0;
 	for (const auto& pair : handRanks) {
 		if (pair.second == 2) {
@@ -101,7 +101,7 @@ int countPair(const std::map<std::string, int>& handRanks) const {
 	return 0;
 }
 
-int countThreeOfAKind(const std::map<std::string, int>& handRanks) const {
+int HandEvaluator::countThreeOfAKind(const std::map<std::string, int>& handRanks) const {
 	int threeCounter = 0;
 	for (const auto& pair : handRanks) {
 		if (pair.second == 3) {
@@ -115,7 +115,7 @@ int countThreeOfAKind(const std::map<std::string, int>& handRanks) const {
 	return 0;
 }
 
-bool hasFullHouse(const std::map<std::string, int>& handRanks) const {
+bool HandEvaluator::hasFullHouse(const std::map<std::string, int>& handRanks) const {
 	bool hasThree = false;
 	bool hasTwo = false;
 	std::string threeRank;
@@ -139,7 +139,7 @@ bool hasFullHouse(const std::map<std::string, int>& handRanks) const {
 	return false;
 }
 
-bool hasFourOfAKind(const std::map<std::string, int>& handRanks) const {
+bool HandEvaluator::hasFourOfAKind(const std::map<std::string, int>& handRanks) const {
 	for (const auto& pair : handRanks) {
 		if (pair.second == 4) {
 			return true;
@@ -148,7 +148,7 @@ bool hasFourOfAKind(const std::map<std::string, int>& handRanks) const {
 	return false;
 }
 
-bool hasStraight(const std::vector<Cards>& cards) const {
+bool HandEvaluator::hasStraight(const std::vector<Cards>& cards) const {
 	std::vector<int> ranks;
 	int succeding = 1;
 	for (const auto& card : cards) {
@@ -156,7 +156,7 @@ bool hasStraight(const std::vector<Cards>& cards) const {
 	}
 	std::sort(ranks.begin(), ranks.end());
 
-	//Check for straight (10, J, Q, K, A)
+	//Check for straight (... , 10, J, Q, K, A)
 	for (int i = 1; i < ranks.size(); i++) {
 		if (ranks[i] == ranks[i - 1] + 1) {
 			succeding++;
@@ -175,7 +175,7 @@ bool hasStraight(const std::vector<Cards>& cards) const {
 
 	//Check for Ace-low straight (A, 2, 3, 4, 5)
 
-	std::vector<int> aceLowStraight = { 14, 2, 3, 4, 5 };
+	const std::vector<int> aceLowStraight = { 14, 2, 3, 4, 5 };
 	bool hasAceLowStraight = true;
 
 	for (const int& rank : aceLowStraight) {
@@ -190,7 +190,7 @@ bool hasStraight(const std::vector<Cards>& cards) const {
 	return false;
 }
 
-bool hasFlush(const std::map<std::string, int>& suits) const {
+bool HandEvaluator::hasFlush(const std::map<std::string, int>& suits) const {
 	for (const auto& pair : suits) {
 		if (pair.second >= 5) {
 			return true;
@@ -199,7 +199,7 @@ bool hasFlush(const std::map<std::string, int>& suits) const {
 	return false;
 }
 
-bool hasStraightFlush(const std::vector<Cards>& cards) const {
+bool HandEvaluator::hasStraightFlush(const std::vector<Cards>& cards) const {
 	auto suits = countSuits(cards);
 
 	for (const auto& pair : suits) {
@@ -221,7 +221,7 @@ bool hasStraightFlush(const std::vector<Cards>& cards) const {
 	return false;
 }
 
-bool hasRoyalFlush(const std::vector<Cards>& cards) const {
+bool HandEvaluator::hasRoyalFlush(const std::vector<Cards>& cards) const {
 	auto suits = countSuits(cards);
 
 	std::vector<std::string> royalSequence = { "10", "J", "Q", "K", "A" };
@@ -253,7 +253,7 @@ bool hasRoyalFlush(const std::vector<Cards>& cards) const {
 	return false;
 }
 
-HandRank getHandCategory(const std::vector<Cards>& cards) const {
+HandRank HandEvaluator::getHandCategory(const std::vector<Cards>& cards) const {
 	auto cardHand = evaluateHand(cards);
 	auto suits = countSuits(cards);
 
@@ -287,7 +287,7 @@ HandRank getHandCategory(const std::vector<Cards>& cards) const {
 	return HandRank::HighCard;
 }
 
-int getHighCard(const std::vector<Cards>& cards) const {
+int HandEvaluator::getHighCard(const std::vector<Cards>& cards) const {
 	int highCardValue = 0;
 	for (const auto& card : cards) {
 		int cardValue = getRankValue(card.rank);

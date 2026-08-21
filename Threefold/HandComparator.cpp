@@ -72,13 +72,13 @@ int HandComparator::compareTwoPair(const HandData& d1, const HandData& d2) const
 
 	for (auto map : d1.cardMapping) {
 		if (map.second == 2) {
-			pairs1.push_back(evaluator.(map.first));
+			pairs1.push_back(evaluator.getRankValue(map.first));
 		}
 	}
 
 	for (auto map : d2.cardMapping) {
 		if (map.second == 2) {
-			pairs2.push_back(evaluator.(map.first));
+			pairs2.push_back(evaluator.getRankValue(map.first));
 		}
 	}
 
@@ -279,10 +279,132 @@ int HandComparator::compareStraightFlush(const HandData& d1, const HandData& d2)
 }
 
 int HandComparator::compareFullHouse(const HandData& d1, const HandData& d2) const {
+	int ToaK1 = 0;
+	int ToaK2 = 0;
+	int Pair1 = 0;
+	int Pair2 = 0;
+	int ThreeCount1 = evaluator.countThreeOfAKind(d1.cardMapping);
+	int ThreeCount2 = evaluator.countThreeOfAKind(d2.cardMapping);
+	int PairCount1 = evaluator.countPair(d1.cardMapping);
+	int PairCount2 = evaluator.countPair(d2.cardMapping);
+	
+	//Hand 1 Tree Of A Kind
+	if (ThreeCount1 == 2) {
+		int highest1 = 0;
+		int secHighest1 = 0;
+
+		for (const auto& map : d1.cardMapping) {
+			if (map.second >= 3) {
+				int rank = evaluator.getRankValue(map.first);
+				if (rank > highest1) {
+					secHighest1 = highest1;
+					highest1 = rank;
+				}
+				else if (rank > secHighest1) {
+					secHighest1 = rank;
+				}
+			}
+			
+		}
+
+		ToaK1 = highest1;
+		Pair1 = secHighest1;
+	}
+	else if (ThreeCount1 == 1) {
+		for (const auto& map : d1.cardMapping) {
+			if (map.second >= 3) {
+				ToaK1 = evaluator.getRankValue(map.first);
+			}
+			else if (map.second == 2 && PairCount1 == 1) {
+				Pair1 = evaluator.getRankValue(map.first);
+			}
+			else if (map.second == 2 && PairCount1 == 2) {
+				int actual = evaluator.getRankValue(map.first);
+				if (actual > Pair1) {
+					Pair1 = actual;
+				}
+				
+			}
+		} 
+	}
+
+	// Hand 2 ThreeOfAKind
+	if (ThreeCount2 == 2) {
+		int highest2 = 0;
+		int secHighest2 = 0;
+
+		for (const auto& map : d2.cardMapping) {
+			if (map.second >= 3) {
+				int rank = evaluator.getRankValue(map.first);
+				if (rank > highest2) {
+					secHighest2 = highest2;
+					highest2 = rank;
+				}
+				else if (rank > secHighest2) {
+					secHighest2 = rank;
+				}
+			}
+		}
+
+		ToaK2 = highest2;
+		Pair2 = secHighest2;
+	}
+	else if (ThreeCount2 == 1) {
+		for (const auto& map : d2.cardMapping) {
+			if (map.second >= 3) {
+				ToaK2 = evaluator.getRankValue(map.first);
+			}
+			else if (map.second == 2 && PairCount2 == 1) {
+				Pair2 = evaluator.getRankValue(map.first);
+			}
+			else if (map.second == 2 && PairCount2 == 2) {
+				int actual = evaluator.getRankValue(map.first);
+				if (actual > Pair2) {Pair2 = actual;}
+			}	
+		}
+	}
+
+	if (ToaK1 > ToaK2) return 1;
+	if (ToaK2 > ToaK1) return -1;
+	if (Pair1 > Pair2) return 1;
+	if (Pair2 > Pair1) return -1;
 	return 0;
 }
 
 int HandComparator::compareFourOfAKind(const HandData& d1, const HandData& d2) const {
+	int rank1 = 0;
+	int kicker1 = 0;
+	int rank2 = 0;
+	int kicker2 = 0;
+
+	for (const auto& map : d1.cardMapping) {
+		if (map.second == 4) {
+			rank1 = evaluator.getRankValue(map.first);
+		}
+	}
+
+	for (const int& actual : d1.ranks) {
+		if (actual != rank1 && actual > kicker1) {
+			kicker1 = actual;
+		}
+	}
+
+	for (const auto& map : d2.cardMapping) {
+		if (map.second == 4) {
+			rank2 = evaluator.getRankValue(map.first);
+		}
+	}
+
+	for (const int& actual : d2.ranks) {
+		if (actual != rank2 && actual > kicker2) {
+			kicker2 = actual;
+		}
+	}
+	
+	if (rank1 > rank2) return 1;
+	if (rank2 > rank1) return -1;
+	if (kicker1 > kicker2) return 1;
+	if (kicker2 > kicker1) return -1;
 	return 0;
 }
 
